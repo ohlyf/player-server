@@ -1,3 +1,5 @@
 module.exports = {
-  register: require('./userValidator').register
+  userValidator: {
+    ...require('./userValidator'),
+  }
 }
