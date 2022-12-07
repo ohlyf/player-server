@@ -22,6 +22,7 @@ const login = async (req, res) => {
 }
 
 const list = async (req, res) => {
+  console.log(req.user.userinfo)
   res.status(200).json(req.body)
 }
 

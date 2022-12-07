@@ -1,9 +1,9 @@
 const express = require('express')
-const cors=require('cors')
-const morgan=require('morgan')
+const cors = require('cors')
+const morgan = require('morgan')
 
-const router=require('./router')
-// 加一个注释，用以说明，本项目代码可以任意定制更改
+const router = require('./router')
+
 const app = express()
 
 // 解析客户端请求中间件
@@ -14,7 +14,7 @@ app.use(cors())
 // 日志
 app.use(morgan('dev'))
 // 路由
-app.use('/api/v1',router)
+app.use('/api/v1', router)
 const PORT = process.env.PORT || 3000
 
 app.listen(PORT, () => {
