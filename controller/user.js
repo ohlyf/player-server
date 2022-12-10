@@ -1,29 +1,36 @@
-const {User} = require('../model/index')
-const jwt = require('jsonwebtoken')
-const {createToken} = require('../utils/jwt')
+const { User } = require("../model/index");
+const jwt = require("jsonwebtoken");
+const { createToken } = require("../utils/jwt");
 const register = async (req, res) => {
-  const userModel = new User(req.body)
-  const dbBack = await userModel.save()
-  let user = dbBack.toJSON()
-  delete user.password
+  const userModel = new User(req.body);
+  const dbBack = await userModel.save();
+  let user = dbBack.toJSON();
+  delete user.password;
   res.status(201).json({
-    user
-  })
-}
+    user,
+  });
+};
 
 const login = async (req, res) => {
-  let dbBack = await User.findOne(req.body)
+  let dbBack = await User.findOne(req.body);
   if (!dbBack) {
-    res.status(402).json({error: '邮箱或者密码不正确'})
+    res.status(402).json({ error: "邮箱或者密码不正确" });
   }
-  dbBack = dbBack.toJSON()
-  dbBack.token = await createToken(dbBack)
-  res.status(200).json({dbBack})
-}
+  dbBack = dbBack.toJSON();
+  dbBack.token = await createToken(dbBack);
+  res.status(200).json({ dbBack });
+};
 
 const list = async (req, res) => {
-  console.log(req.user.userinfo)
-  res.status(200).json(req.body)
-}
+  console.log(req.user.userinfo);
+  res.status(200).json(req.body);
+};
 
-module.exports = {register, login, list}
+// 用户修改
+const update = async (req, res) => {
+  const id = req.user.userinfo._id;
+  const updateData = await User.findByIdAndUpdate(id, req.body, { new: true });
+  console.log(updateData);
+  res.send();
+};
+module.exports = { register, login, list, update };
