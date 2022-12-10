@@ -1,6 +1,10 @@
+const fs = require("fs");
+const { promisify } = require("util");
 const { User } = require("../model/index");
 const jwt = require("jsonwebtoken");
 const { createToken } = require("../utils/jwt");
+
+const rename = promisify(fs.rename);
 const register = async (req, res) => {
   const userModel = new User(req.body);
   const dbBack = await userModel.save();
@@ -33,4 +37,21 @@ const update = async (req, res) => {
   console.log(updateData);
   res.send();
 };
-module.exports = { register, login, list, update };
+
+// 用户头像上传
+const avatar = async (req, res) => {
+  const fileArr = req.file.originalname.split(".");
+  const fileType = fileArr[fileArr.length - 1];
+
+  try {
+    await rename(
+      "./public/" + req.file.filename,
+      "./public/" + req.file.filename + "." + fileType
+    );
+    res.status(201).json({ filePath: req.file.filename + "." + fileType });
+  } catch (error) {
+    res.status(500).json({ err: error });
+  }
+  res.send(afterFix);
+};
+module.exports = { register, login, list, update, avatar };
