@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  avatar: {
+  image: {
     type: String,
     default: null,
   },
@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
-  channelDes: {
+  channeldes: {
     type: String,
     default: null,
   },

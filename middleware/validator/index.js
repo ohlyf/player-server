@@ -1,5 +1,8 @@
 module.exports = {
   userValidator: {
-    ...require('./userValidator'),
-  }
-}
+    ...require("./userValidator"),
+  },
+  videoValidator: {
+    ...require("./videoValidator"),
+  },
+};

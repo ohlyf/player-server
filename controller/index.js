@@ -1,3 +1,5 @@
 module.exports = {
-  userController: require('./user')
-}
+  userController: require("./userController"),
+  videoController: require("./videoController"),
+  vodController: require("./vodController"),
+};

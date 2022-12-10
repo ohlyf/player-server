@@ -1,17 +1,24 @@
-const mongoose = require('mongoose')
-const {mongo} = require('../config/config.default')
-mongoose.set('strictQuery', false)
+const mongoose = require("mongoose");
+const { mongo } = require("../config/config.default");
+mongoose.set("strictQuery", false);
 
 async function main() {
-  await mongoose.connect(mongo.url)
+  await mongoose.connect(mongo.url);
 }
 
-main().then(res => {
-  console.log('mongo连接成功')
-}).catch(err => {
-  console.log(err, 'mongo连接失败')
-})
+main()
+  .then((res) => {
+    console.log("mongo连接成功");
+  })
+  .catch((err) => {
+    console.log(err, "mongo连接失败");
+  });
 
 module.exports = {
-  User: mongoose.model('User', require('./userModel'))
-}
+  User: mongoose.model("User", require("./userModel")),
+  Video: mongoose.model("Video", require("./videoModel")),
+  Subscribe: mongoose.model("Subscribe", require("./subscribeModel")),
+  Videocomment: mongoose.model("Videocomment", require("./videocommentModel")),
+  Videolike: mongoose.model("Videolike", require("./videolikeModel")),
+  collectModel: mongoose.model("CollectModel", require("./collectModel")),
+};
