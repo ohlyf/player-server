@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const baseModel = require("./baseModel");
 
-const videolikeSchema = new mongoose.Schema({
+const videoLikeSchema = new mongoose.Schema({
   user: {
     type: mongoose.ObjectId,
     required: true,
@@ -20,4 +20,4 @@ const videolikeSchema = new mongoose.Schema({
   ...baseModel,
 });
 
-module.exports = videolikeSchema;
+module.exports = videoLikeSchema;

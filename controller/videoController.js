@@ -1,16 +1,17 @@
 const {
   Video,
-  Videocomment,
-  Videolike,
+  VideoComment,
+  VideoLike,
   Subscribe,
   collectModel,
 } = require("../model/index");
+const { hotsInc, topHots } = require("../model/redis/redisHotsInc");
 
-// exports.getHots = async (req, res) => {
-//   var topnum = req.params.topnum;
-//   var tops = await topHots(topnum);
-//   res.status(200).json({ tops });
-// };
+exports.getHots = async (req, res) => {
+  var topNum = req.params.topNum;
+  var tops = await topHots(topNum);
+  res.status(200).json({ tops });
+};
 
 // 观看+1 点赞+2 评论+2  收藏+3
 
@@ -28,66 +29,69 @@ exports.collect = async (req, res) => {
   if (doc) {
     return res.status(403).json({ err: "视频以被收藏" });
   }
-  const mycollect = await collectModel({
+  const myCollect = await collectModel({
     user: userId,
     video: videoId,
   }).save();
 
-  res.status(201).json({ mycollect });
+  if (myCollect) {
+    await hotsInc(videoId, 3);
+  }
+  res.status(201).json({ myCollect });
 };
 
-exports.likelist = async (req, res) => {
+exports.likeList = async (req, res) => {
   const { pageNum = 1, pageSize = 10 } = req.body;
-  var likes = await Videolike.find({
+  var likes = await VideoLike.find({
     like: 1,
     user: req.user.userinfo._id,
   })
     .skip((pageNum - 1) * pageSize)
     .limit(pageSize)
-    .populate("video", "_id title vodvideoId user");
+    .populate("video", "_id title vodVideoId user");
 
-  var likeCount = await Videolike.countDocuments({
+  var likeCount = await VideoLike.countDocuments({
     like: 1,
     user: req.user.userinfo._id,
   });
   res.status(200).json({ likes, likeCount });
 };
 
-exports.dislikevideo = async (req, res) => {
+exports.disLikeVideo = async (req, res) => {
   const videoId = req.params.videoId;
   const userId = req.user.userinfo._id;
   const video = await Video.findById(videoId);
   if (!video) {
     return res.status(404).json({ err: "视频不存在" });
   }
-  var doc = await Videolike.findOne({
+  var doc = await VideoLike.findOne({
     user: userId,
     video: videoId,
   });
 
-  let isdislike = true;
+  let isDislike = true;
 
   if (doc && doc.like === -1) {
     await doc.remove();
   } else if (doc && doc.like === 1) {
     doc.like = -1;
     await doc.save();
-    isdislike = false;
+    isDislike = false;
   } else {
-    await new Videolike({
+    await new VideoLike({
       user: userId,
       video: videoId,
       like: -1,
     }).save();
-    isdislike = false;
+    isDislike = false;
   }
 
-  video.likeCount = await Videolike.countDocuments({
+  video.likeCount = await VideoLike.countDocuments({
     video: videoId,
     like: 1,
   });
 
-  video.dislikeCount = await Videolike.countDocuments({
+  video.dislikeCount = await VideoLike.countDocuments({
     video: videoId,
     like: -1,
   });
@@ -95,44 +99,46 @@ exports.dislikevideo = async (req, res) => {
   await video.save();
   res.status(200).json({
     ...video.toJSON(),
-    isdislike,
+    isDislike,
   });
 };
 
-exports.likevideo = async (req, res) => {
+exports.likeVideo = async (req, res) => {
   const videoId = req.params.videoId;
   const userId = req.user.userinfo._id;
   const video = await Video.findById(videoId);
   if (!video) {
     return res.status(404).json({ err: "视频不存在" });
   }
-  var doc = await Videolike.findOne({
+  var doc = await VideoLike.findOne({
     user: userId,
     video: videoId,
   });
 
-  let islike = true;
+  let isLike = true;
 
   if (doc && doc.like === 1) {
     await doc.remove();
-    islike = false;
+    isLike = false;
   } else if (doc && doc.like === -1) {
     doc.like = 1;
     await doc.save();
+    await hotsInc(videoId, 2);
   } else {
-    await new Videolike({
+    await new VideoLike({
       user: userId,
       video: videoId,
       like: 1,
     }).save();
+    await hotsInc(videoId, 2);
   }
 
-  video.likeCount = await Videolike.countDocuments({
+  video.likeCount = await VideoLike.countDocuments({
     video: videoId,
     like: 1,
   });
 
-  video.dislikeCount = await Videolike.countDocuments({
+  video.dislikeCount = await VideoLike.countDocuments({
     video: videoId,
     like: -1,
   });
@@ -140,17 +146,17 @@ exports.likevideo = async (req, res) => {
   await video.save();
   res.status(200).json({
     ...video.toJSON(),
-    islike,
+    isLike,
   });
 };
 
-exports.deletecomment = async (req, res) => {
+exports.deleteComment = async (req, res) => {
   const { videoId, commentId } = req.params;
   const videoInfo = await Video.findById(videoId);
   if (!videoInfo) {
     return res.status(404).json({ err: "视频不存在" });
   }
-  const comment = await Videocomment.findById(commentId);
+  const comment = await VideoComment.findById(commentId);
   if (!comment) {
     return res.status(404).json({ err: "评论不存在" });
   }
@@ -163,44 +169,44 @@ exports.deletecomment = async (req, res) => {
   res.status(200).json({ err: "删除成功" });
 };
 
-exports.commentlist = async (req, res) => {
+exports.commentList = async (req, res) => {
   const videoId = req.params.videoId;
   const { pageNum = 1, pageSize = 10 } = req.body;
-  const comments = await Videocomment.find({ video: videoId })
+  const comments = await VideoComment.find({ video: videoId })
     .skip((pageNum - 1) * pageSize)
     .limit(pageSize)
-    .populate("user", "_id username imgage");
-  const commentCount = await Videocomment.countDocuments({ video: videoId });
+    .populate("user", "_id username avatar");
+  const commentCount = await VideoComment.countDocuments({ video: videoId });
   res.status(200).json({ comments, commentCount });
 };
 exports.comment = async (req, res) => {
   const { videoId } = req.params;
   const videoInfo = await Video.findById(videoId);
   if (!videoInfo) {
-    return res.status(404).josn({ err: "视频不存在" });
+    return res.status(404).json({ err: "视频不存在" });
   }
-  const comment = await new Videocomment({
+  const comment = await new VideoComment({
     content: req.body.content,
     video: videoId,
     user: req.user.userinfo._id,
   }).save();
-
+  await hotsInc(videoId, 2);
   videoInfo.commentCount++;
   await videoInfo.save();
   res.status(201).json(comment);
 };
 
-exports.videolist = async (req, res) => {
+exports.videoList = async (req, res) => {
   let { pageNum = 1, pageSize = 10 } = req.body;
 
-  var videolist = await Video.find()
+  var videoList = await Video.find()
     .skip((pageNum - 1) * pageSize)
     .limit(pageSize)
-    .sort({ creatAt: -1 })
+    .sort({ createAt: -1 })
     .populate("user", "_id username cover");
-  const getvideoCount = await Video.countDocuments();
+  const getVideoCount = await Video.countDocuments();
 
-  res.status(200).json({ videolist, getvideoCount });
+  res.status(200).json({ videoList, getVideoCount });
 };
 
 exports.video = async (req, res) => {
@@ -210,16 +216,16 @@ exports.video = async (req, res) => {
     "_id username cover"
   );
   videoInfo = videoInfo.toJSON();
-  videoInfo.islike = false;
+  videoInfo.isLike = false;
   videoInfo.isDislike = false;
   videoInfo.isSubscribe = false;
 
   if (req.user.userinfo) {
     const userId = req.user.userinfo._id;
-    if (await Videolike.findOne({ user: userId, video: videoId, like: 1 })) {
-      videoInfo.islike = true;
+    if (await VideoLike.findOne({ user: userId, video: videoId, like: 1 })) {
+      videoInfo.isLike = true;
     }
-    if (await Videolike.findOne({ user: userId, video: videoId, like: -1 })) {
+    if (await VideoLike.findOne({ user: userId, video: videoId, like: -1 })) {
       videoInfo.isDislike = true;
     }
     if (
@@ -228,18 +234,18 @@ exports.video = async (req, res) => {
       videoInfo.isSubscribe = true;
     }
   }
-
+  await hotsInc(videoId, 1);
   res.status(200).json(videoInfo);
 };
 
-exports.createvideo = async (req, res) => {
+exports.createVideo = async (req, res) => {
   var body = req.body;
   body.user = req.user.userinfo._id;
 
   const videoModel = new Video(body);
   try {
-    var dbback = await videoModel.save();
-    res.status(201).json({ dbback });
+    var dbBack = await videoModel.save();
+    res.status(201).json({ dbBack });
   } catch (error) {
     res.status(500).json({ err: error });
   }

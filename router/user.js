@@ -10,7 +10,6 @@ const upload = multer({ dest: "public/" });
 router
   .post("/register", userValidator.register, userController.register)
   .post("/login", userValidator.login, userController.login)
-  .get("/list", verifyToken, userController.list)
-  .put("/", verifyToken, userValidator.update, userController.update)
+  .put("/user", verifyToken, userValidator.update, userController.update)
   .post("/avatar", verifyToken, upload.single("avatar"), userController.avatar);
 module.exports = router;

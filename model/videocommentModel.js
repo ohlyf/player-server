@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const baseModel = require("./baseModel");
 
-const videocommentSchema = new mongoose.Schema({
+const videoCommentSchema = new mongoose.Schema({
   content: {
     type: String,
     required: true,
@@ -19,4 +19,4 @@ const videocommentSchema = new mongoose.Schema({
   ...baseModel,
 });
 
-module.exports = videocommentSchema;
+module.exports = videoCommentSchema;

@@ -6,24 +6,20 @@ const { verifyToken } = require("../utils/jwt");
 const { videoValidator } = require("../middleware/validator/videoValidator");
 
 router
+  .get("/hots/:num", videoController.getHots)
   .get("/collect/:videoId", verifyToken(), videoController.collect)
-  .get("/likelist", verifyToken(), videoController.likelist)
-  .get("/dislike/:videoId", verifyToken(), videoController.dislikevideo)
-  .get("/like/:videoId", verifyToken(), videoController.likevideo)
+  .get("/like", verifyToken(), videoController.likeList)
+  .get("/dislike/:videoId", verifyToken(), videoController.disLikeVideo)
+  .get("/like/:videoId", verifyToken(), videoController.likeVideo)
   .delete(
     "/comment/:videoId/:commentId",
     verifyToken(),
-    videoController.deletecomment
+    videoController.deleteComment
   )
-  .get("/commentlist/:videoId", videoController.commentlist)
+  .get("/comment/:videoId", videoController.commentList)
   .post("/comment/:videoId", verifyToken(), videoController.comment)
-  .get("/videolist", videoController.videolist)
+  .get("/video", videoController.videoList)
   .get("/video/:videoId", verifyToken(false), videoController.video)
-  .get("/getvod", verifyToken(), vodController.getVod)
-  .post(
-    "/createvideo",
-    verifyToken(),
-    videoValidator,
-    videoController.createvideo
-  );
+  .get("/vod", verifyToken(), vodController.getVod)
+  .post("/video", verifyToken(), videoValidator, videoController.createVideo);
 module.exports = router;

@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
-  channeldes: {
+  channelDes: {
     type: String,
     default: null,
   },

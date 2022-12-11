@@ -25,11 +25,6 @@ const login = async (req, res) => {
   res.status(200).json({ dbBack });
 };
 
-const list = async (req, res) => {
-  console.log(req.user.userinfo);
-  res.status(200).json(req.body);
-};
-
 // 用户修改
 const update = async (req, res) => {
   const id = req.user.userinfo._id;
@@ -54,4 +49,4 @@ const avatar = async (req, res) => {
   }
   res.send(afterFix);
 };
-module.exports = { register, login, list, update, avatar };
+module.exports = { register, login, update, avatar };
